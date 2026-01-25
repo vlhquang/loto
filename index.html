@@ -442,7 +442,7 @@
     </div>
 </div>
     <script>
-        let COUNT = 60;
+let COUNT = 60;
 const ANIMATION_DURATION = 2000;
 const ANIMATION_INTERVAL = 100;
 
@@ -450,144 +450,137 @@ let selected = new Set();
 let isSpinning = false;
 let spinInterval;
 
-function initializeGrid() {
-    // Không cần tạo các mục trong `div id="result"`
-}
-
 function getRandomNumber(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+// ✅ CHỈ GIỮ 1 HÀM NÀY
 function getUniqueRandomNumber() {
-    if (selected.size >= COUNT) return null;
-    let num;
-    do {
-        num = getRandomNumber(1, COUNT);
-    } while (selected.has(num));
-    return num;
+  if (selected.size >= COUNT) return null;
+
+  // Cách 1: random thử tới khi ra số chưa dùng (OK với COUNT <= vài nghìn)
+  let num;
+  do {
+    num = getRandomNumber(1, COUNT);
+  } while (selected.has(num));
+  return num;
+}
+
+// ✅ ADD SỐ VÀO SET để lần sau không trùng
+function markNumberAsSelected(number) {
+  if (number == null) return;
+  selected.add(number);
 }
 
 function updateDisplay(number) {
-    document.getElementById("currentNumber").textContent = number;
-}
-
-function markNumberAsSelected(number) {
-    
-}
-
-function getUniqueRandomNumber() {
-    if (selected.size >= COUNT) return null;
-    let num;
-    do {
-        num = getRandomNumber(1, COUNT);
-    } while (selected.has(num));
-    return num;
+  document.getElementById("currentNumber").textContent = number ?? "";
 }
 
 function spin() {
-    if (isSpinning) return;
-    if (selected.size >= COUNT) {
-        alert("Tất cả các số đã được chọn!");
-        return;
+  if (isSpinning) return;
+
+  if (selected.size >= COUNT) {
+    alert("Tất cả các số đã được chọn!");
+    return;
+  }
+
+  const drawButton = document.getElementById("drawButton");
+  drawButton.classList.add("is-spinning");
+  isSpinning = true;
+
+  const numberDisplay = document.getElementById("numberDisplay");
+  numberDisplay.classList.add("spinning");
+
+  let elapsed = 0;
+
+  if (navigator.vibrate) navigator.vibrate(200);
+
+  spinInterval = setInterval(() => {
+    // hiển thị random cho đẹp (có thể trùng, không sao)
+    updateDisplay(getRandomNumber(1, COUNT));
+    elapsed += ANIMATION_INTERVAL;
+
+    if (elapsed >= ANIMATION_DURATION) {
+      clearInterval(spinInterval);
+      isSpinning = false;
+      numberDisplay.classList.remove("spinning");
+      drawButton.classList.remove("is-spinning");
+
+      const finalNumber = getUniqueRandomNumber();   // ✅ lấy số chưa dùng
+      updateDisplay(finalNumber);
+      markNumberAsSelected(finalNumber);            // ✅ lưu lại để không trùng
+      logSelection(finalNumber);
+
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
     }
-
-    const drawButton = document.getElementById("drawButton");
-    drawButton.classList.add("is-spinning");
-    isSpinning = true;
-
-    const numberDisplay = document.getElementById("numberDisplay");
-    numberDisplay.classList.add("spinning");
-    let elapsed = 0;
-
-    if (navigator.vibrate) {
-        navigator.vibrate(200);
-    }
-
-    spinInterval = setInterval(() => {
-        updateDisplay(getRandomNumber(1, COUNT));
-        elapsed += ANIMATION_INTERVAL;
-
-        if (elapsed >= ANIMATION_DURATION) {
-            clearInterval(spinInterval);
-            isSpinning = false;
-            numberDisplay.classList.remove("spinning");
-            drawButton.classList.remove("is-spinning");
-            const finalNumber = getUniqueRandomNumber();
-            updateDisplay(finalNumber);
-            markNumberAsSelected(finalNumber);
-            logSelection(finalNumber); // Gọi hàm logSelection để thêm số vào nhật ký
-
-            if (navigator.vibrate) {
-                navigator.vibrate([100, 50, 100]);
-            }
-        }
-    }, ANIMATION_INTERVAL);
+  }, ANIMATION_INTERVAL);
 }
 
 function resetGame() {
-    document.getElementById('resetModal').style.display = 'block';
+  document.getElementById('resetModal').style.display = 'block';
 }
 
 function closeResetModal() {
-    document.getElementById('resetModal').style.display = 'none';
+  document.getElementById('resetModal').style.display = 'none';
 }
 
 function confirmReset() {
-    selected.clear();
-    document.getElementById('log').innerHTML = ''; // Xóa nhật ký
-    updateDisplay(0);
-    if (isSpinning) {
-        clearInterval(spinInterval);
-        isSpinning = false;
-        document.getElementById("numberDisplay").classList.remove("spinning");
-    }
-    closeResetModal();
+  selected.clear();
+  document.getElementById('log').innerHTML = '';
+  updateDisplay(0);
+
+  if (isSpinning) {
+    clearInterval(spinInterval);
+    isSpinning = false;
+    document.getElementById("numberDisplay").classList.remove("spinning");
+    document.getElementById("drawButton").classList.remove("is-spinning");
+  }
+
+  closeResetModal();
 }
+
 function showConfigPopup() {
-    document.getElementById('configModal').style.display = 'block';
+  document.getElementById('configModal').style.display = 'block';
 }
 
 function closeConfigModal() {
-    document.getElementById('configModal').style.display = 'none';
+  document.getElementById('configModal').style.display = 'none';
 }
 
 function setCount() {
-    const countInput = document.getElementById('countInput').value;
-    if (countInput !== '') {
-        COUNT = parseInt(countInput);
-        resetGame();
-        closeConfigModal();
-    }
+  const countInput = document.getElementById('countInput').value;
+  if (countInput !== '') {
+    COUNT = parseInt(countInput, 10);
+    confirmReset();       // ✅ reset thật luôn (đỡ phải bấm confirm)
+    closeConfigModal();
+  }
 }
 
 function logSelection(number) {
-    const logDiv = document.getElementById('log');
-    const newLogEntry = document.createElement('div');
-    newLogEntry.className = 'grid-item item-active';
-    newLogEntry.innerText = number;
-    logDiv.appendChild(newLogEntry);
+  if (number == null) return;
+  const logDiv = document.getElementById('log');
+  const newLogEntry = document.createElement('div');
+  newLogEntry.className = 'grid-item item-active';
+  newLogEntry.innerText = number;
+  logDiv.appendChild(newLogEntry);
 }
 
 window.onclick = function(event) {
-    const resetModal = document.getElementById('resetModal');
-    const configModal = document.getElementById('configModal');
-    if (event.target === resetModal) {
-        closeResetModal();
-    }
-    if (event.target === configModal) {
-        closeConfigModal();
-    }
+  const resetModal = document.getElementById('resetModal');
+  const configModal = document.getElementById('configModal');
+  if (event.target === resetModal) closeResetModal();
+  if (event.target === configModal) closeConfigModal();
 }
 
 document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        closeResetModal();
-        closeConfigModal();
-    }
+  if (event.key === 'Escape') {
+    closeResetModal();
+    closeConfigModal();
+  }
 });
 
-initializeGrid();
 document.getElementById("drawButton").addEventListener("click", spin);
-    </script>
+</script>
+
 </body>
 </html>

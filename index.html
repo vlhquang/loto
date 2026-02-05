@@ -1,586 +1,493 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Random Number Generator</title>
+    <title>Loto Master Pro - Hệ Thống Gọi Số Chuyên Nghiệp</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --danger-color: #ef4444;
-            --danger-hover: #dc2626;
-            --background: #f0f9ff;
-            --number-bg: #fff;
-            --text-color: #1e293b;
-            --selected-color: #059669;
-            --circle-shadow: rgba(0, 0, 0, .1);
+        @font-face {
+            font-family: 'Digital-7';
+            src: url('https://fonts.cdnfonts.com/s/14101/digital-7.mono.woff') format('woff');
         }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+        .digital-font { font-family: 'Digital-7', monospace; }
         body {
-            margin: 0;
-            padding: 10px;
-            font-family: system-ui, -apple-system, sans-serif;
-            background: var(--background);
+            font-family: 'Montserrat', sans-serif;
+            background: radial-gradient(circle, #0f172a 0%, #020617 100%);
             min-height: 100vh;
-            color: var(--text-color);
-            overflow-x: hidden;
-        }
-        .container {
-            width: 100%;
-            max-width: 900px;
-            margin: 0 auto;
-            text-align: center;
-            padding: 10px;
-        }
-        .title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: var(--primary-color);
-            text-transform: uppercase;
-            letter-spacing: .05em;
-        }
-        .number-display {
-            background: var(--number-bg);
-            height: 280px;
-            width: 280px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 50%;
-            margin: 20px auto;
-            box-shadow: 0 10px 30px var(--circle-shadow);
-            border: 8px solid var(--primary-color);
-            transition: transform .3s ease;
-            user-select: none;
-        }
-        .current-number {
-            color: var(--primary-color);
-            font-size: 120px;
-            font-weight: 800;
-            text-shadow: 2px 2px 4px var(--circle-shadow);
-        }
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
-            gap: 8px;
-            padding: 20px;
-            margin-bottom: 100px;
-            background: var(--number-bg);
-            border-radius: 15px;
-            box-shadow: 0 4px 6px var(--circle-shadow);
-        }
-        .grid-item {
-            background-color: var(--number-bg);
-            border: 2px solid var(--primary-color);
-            aspect-ratio: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: 600;
-            border-radius: 50%;
-            font-size: 18px;
-            transition: all .3s ease;
-            cursor: pointer;
-            color: var(--primary-color);
-            user-select: none;
-            touch-action: manipulation;
-        }
-        .item-active {
-            background-color: var(--selected-color);
-            color: #fff;
-            border-color: var(--selected-color);
-            transform: scale(1.05);
-        }
-        .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            padding: 15px;
-            background: rgba(255, 255, 255, .9);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, .1);
-            z-index: 1000;
-        }
-        .btn {
-            position: relative;
-            border: none;
-            border-radius: 12px;
-            color: #fff;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            cursor: pointer;
-            transition: all .3s ease;
+            color: white;
             overflow: hidden;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 56px;
         }
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .2), transparent);
-            transition: .5s;
-        }
-        .btn:hover::before {
-            left: 100%;
-        }
-        .btn span {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 0 24px;
-            height: 100%;
-            width: 100%;
-            z-index: 1;
-        }
-        .btn-draw {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            width: 70%;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, .3);
-        }
-        .btn-draw:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(37, 99, 235, .4);
-        }
-        .btn-draw:active {
-            transform: translateY(1px);
-            box-shadow: 0 2px 10px rgba(37, 99, 235, .2);
-        }
-        .btn-reset {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            width: 15%;
-            box-shadow: 0 4px 15px rgba(239, 68, 68, .3);
-        }
-        .btn-reset:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(239, 68, 68, .4);
-        }
-        .btn-reset:active {
-            transform: translateY(1px);
-            box-shadow: 0 2px 10px rgba(239, 68, 68, .2);
-        }
-        .btn-icon {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-        }
-        @media (max-width: 768px) {
-            .footer {
-                padding: 12px;
-                gap: 12px;
-            }
-            .btn {
-                min-height: 48px;
-            }
-            .btn span {
-                padding: 0 16px;
-            }
-        }
-        @media (max-width: 480px) {
-            .footer {
-                padding: 10px;
-                gap: 8px;
-            }
-            .btn {
-                min-height: 44px;
-            }
-            .btn span {
-                padding: 0 12px;
-                font-size: 14px;
-            }
-            .btn-icon {
-                width: 20px;
-                height: 20px;
-            }
-        }
-        @media (max-width: 360px) {
-            .footer {
-                padding: 8px;
-                gap: 6px;
-            }
-            .btn span {
-                padding: 0 8px;
-                font-size: 12px;
-            }
-            .btn-icon {
-                width: 18px;
-                height: 18px;
-            }
-        }
-        @media (max-height: 480px) and (orientation: landscape) {
-            .footer {
-                padding: 8px;
-            }
-            .btn {
-                min-height: 40px;
-            }
-        }
-        .btn-disabled {
-            opacity: .7;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0); }
-            100% { transform: rotate(360deg); }
-        }
-        .spinner {
-            display: none;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, .3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 8px;
-        }
-        .btn.is-spinning .spinner {
-            display: inline-block;
+        .loto-ball-active {
+            box-shadow: 0 0 20px #facc15;
+            animation: pulse 1.5s infinite;
         }
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% { transform: scale(1); box-shadow: 0 0 10px #facc15; }
+            50% { transform: scale(1.1); box-shadow: 0 0 30px #facc15; }
+            100% { transform: scale(1); box-shadow: 0 0 10px #facc15; }
         }
-        .spinning {
-            animation: pulse .5s infinite;
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #facc1533; border-radius: 10px; }
+        .animate-spin-slow { animation: spin 4s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        .modal-overlay { 
+            display: none; 
+            backdrop-filter: blur(12px); 
+            background-color: rgba(0, 0, 0, 0.85);
         }
-        @media (max-width: 480px) {
-            body { padding: 5px; }
-            .container { padding: 5px; }
-            .title { font-size: 1.5rem; margin-bottom: 1rem; }
-            .number-display { height: 200px; width: 200px; border-width: 6px; margin: 10px auto; }
-            .current-number { font-size: 80px; }
-            .grid-container { grid-template-columns: repeat(auto-fill, minmax(35px, 1fr)); gap: 6px; padding: 10px; margin-bottom: 80px; }
-            .grid-item { font-size: 14px; border-width: 1.5px; }
-            .footer { padding: 10px 5px; gap: 8px; }
-            .btn { padding: 12px 15px; font-size: 14px; border-radius: 8px; }
+        .scale-in { animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes scaleIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .menu-item-label {
+            white-space: nowrap;
+            pointer-events: none;
         }
-        @media (max-width: 320px) {
-            .number-display { height: 180px; width: 180px; }
-            .current-number { font-size: 70px; }
-            .grid-container { grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); gap: 4px; }
-            .grid-item { font-size: 12px; }
-            .btn { padding: 10px 12px; font-size: 12px; }
-        }
-        @media (max-height: 480px) and (orientation: landscape) {
-            .container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center; }
-            .title { grid-column: 1 / -1; margin-bottom: .5rem; }
-            .number-display { height: 160px; width: 160px; margin: 5px auto; }
-            .current-number { font-size: 60px; }
-            .grid-container { margin-bottom: 60px; }
-            .footer { padding: 8px 5px; }
-            .btn { padding: 8px 15px; font-size: 14px; }
-        }
-        .no-select {
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-        @media (pointer: coarse) {
-            .btn { min-height: 44px; }
-            .grid-item { min-width: 44px; min-height: 44px; }
-        }
-        @supports (-webkit-touch-callout: none) {
-            body { -webkit-overflow-scrolling: touch; }
-        }
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, .5);
-            z-index: 2000;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-        }
-        .modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #fff;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, .2);
-            width: 90%;
-            max-width: 320px;
-            z-index: 2001;
-            animation: modalAppear .3s ease;
-        }
-        .modal-title {
-            font-size: 1.5rem;
-            color: var(--text-color);
-            margin-bottom: 15px;
-            font-weight: 600;
-        }
-        .modal-content {
-            font-size: 1.1rem;
-            color: var(--text-color);
-            margin-bottom: 20px;
-            line-height: 1.4;
-        }
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-        .modal-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all .2s ease;
-            flex: 1;
-            max-width: 120px;
-        }
-        .modal-btn-confirm {
-            background: var(--danger-color);
-            color: #fff;
-        }
-        .modal-btn-cancel {
-            background: #e5e7eb;
-            color: var(--text-color);
-        }
-        .modal-btn:hover {
-            transform: translateY(-2px);
-        }
-        .modal-btn:active {
-            transform: translateY(0);
-        }
-        @keyframes modalAppear {
-            from { opacity: 0; transform: translate(-50%, -60%); }
-            to { opacity: 1; transform: translate(-50%, -50%); }
-        }
-        @media (max-width: 480px) {
-            .modal { width: 95%; padding: 15px; }
-            .modal-title { font-size: 1.3rem; }
-            .modal-content { font-size: 1rem; }
-            .modal-btn { padding: 10px 20px; font-size: .9rem; }
+        .hidden { display: none !important; }
+
+        .delay-ctrl-btn {
+            @apply flex items-center justify-center text-slate-500 hover:text-yellow-400 transition-all duration-200 cursor-pointer active:scale-75 p-3;
         }
     </style>
 </head>
-<body class="no-select">
-    <div class="container">
-    <h1 class="title">Xổ Số May Mắn</h1>
-    <div class="number-display" id="numberDisplay">
-        <span class="current-number" id="currentNumber">0</span>
+<body class="select-none">
+
+    <div class="max-w-7xl mx-auto px-4 py-4 md:py-6 h-screen flex flex-col overflow-hidden">
+        
+        <div class="flex-1 flex flex-col md:flex-row gap-4 min-h-0">
+            
+            <!-- Khu vực gọi số chính -->
+            <div id="callingPanel" class="flex flex-col items-center justify-center p-4 bg-slate-900/40 border border-slate-800/60 rounded-[2.5rem] md:w-1/3 xl:w-1/4 flex-shrink-0 relative overflow-hidden shadow-2xl backdrop-blur-xl">
+                
+                <!-- Speed Info Control -->
+                <div class="absolute top-10 left-8 flex flex-col items-center z-50">
+                    <button id="btnIncreaseDelay" class="delay-ctrl-btn" title="Chậm lại (+0.1s)">
+                        <i class="fas fa-chevron-up text-xs"></i>
+                    </button>
+                    
+                    <div class="text-center py-1 select-none pointer-events-none">
+                        <div class="text-[7px] font-black uppercase tracking-[0.3em] text-slate-500 leading-none mb-1">Delay</div>
+                        <div id="delayDisplay" class="text-base font-black text-yellow-400 leading-none digital-font min-w-[45px]">3.0s</div>
+                    </div>
+                    
+                    <button id="btnDecreaseDelay" class="delay-ctrl-btn" title="Nhanh hơn (-0.1s)">
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </button>
+                </div>
+
+                <div class="flex flex-row items-center justify-center w-full h-full relative px-6">
+                    <!-- Main Rolling Circle -->
+                    <div id="mainButton" class="relative group cursor-pointer transition-transform active:scale-95">
+                        <div class="absolute inset-0 bg-yellow-400/5 blur-[50px] rounded-full opacity-30"></div>
+                        <div id="ballRing" class="relative w-44 h-44 md:w-48 md:h-48 lg:w-56 lg:h-56 bg-black/60 rounded-full border-[8px] border-slate-800 flex items-center justify-center shadow-[inset_0_0_60px_rgba(0,0,0,0.9)] transition-all duration-500">
+                            <div id="mainNumber" class="digital-font text-[7rem] md:text-[8rem] lg:text-[10.5rem] leading-none text-yellow-400">--</div>
+                            
+                            <div id="autoBadge" class="hidden absolute bottom-4 flex flex-col items-center">
+                                <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/70 border border-green-500/30 text-[8px] font-black uppercase tracking-[0.15em] text-green-400 backdrop-blur-md">
+                                    <i class="fas fa-play animate-pulse"></i> <span id="autoStatusText">Auto</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History Slots Pinned -->
+                    <div class="absolute right-1 md:right-2 top-1/2 -translate-y-1/2 flex flex-col gap-4">
+                        <div data-slot="0" class="recent-slot w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-sm font-black border border-slate-800/30 border-dashed bg-black/20 text-slate-800 opacity-40 transition-all duration-300">--</div>
+                        <div data-slot="1" class="recent-slot w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-sm font-black border border-slate-800/30 border-dashed bg-black/20 text-slate-800 opacity-40 transition-all duration-300">--</div>
+                        <div data-slot="2" class="recent-slot w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-sm font-black border border-slate-800/30 border-dashed bg-black/20 text-slate-800 opacity-40 transition-all duration-300">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bảng lịch sử các số -->
+            <div id="historyGrid" class="flex-1 bg-slate-900/50 border border-slate-800/60 p-5 md:p-8 rounded-[2.5rem] shadow-2xl backdrop-blur-md overflow-y-auto custom-scrollbar relative">
+                <div id="gridContainer" class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-9 lg:grid-cols-10 xl:grid-cols-12 gap-3 justify-items-center pb-10">
+                    <!-- Balls injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Info -->
+        <footer class="py-2.5 text-center opacity-10 text-[7px] font-black uppercase tracking-[0.6em]">
+            Loto Master Elite Engine • Professional Raffle v3.8
+        </footer>
     </div>
-    <!-- Xóa dòng này -->
-<!-- <div class="grid-container" id="result"></div> -->
-	<div class="grid-container" id="log"></div>
-    <div class="footer">
-        <button class="btn btn-draw" id="drawButton">
-            <span>
-                <svg class="btn-icon" viewBox="0 0 24 24">
-                    <path d="M12 2C17.52 2 22 6.48 22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12C2 6.48 6.48 2 12 2ZM12 4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20C16.42 20 20 16.42 20 12C20 7.58 16.42 4 12 4ZM12 6C15.31 6 18 8.69 18 12C18 15.31 15.31 18 12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6Z"/>
-                </svg>
-                <div class="spinner"></div>
-                Quay Số
-            </span>
+
+    <!-- Floating Menu -->
+    <div class="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-5">
+        <!-- menuOptions container: Dùng gap-5 để giãn cách đều các nút chức năng -->
+        <div id="menuOptions" class="hidden flex flex-col gap-5 items-end">
+            <div class="flex items-center justify-end gap-3 group">
+                <span id="autoLabel" class="menu-item-label text-[9px] font-black uppercase text-slate-100 bg-black/80 px-2 py-1.5 rounded-lg border border-white/10 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity">Tự động: Tắt</span>
+                <button id="autoToggleBtn" class="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center shadow-xl border border-white/5 active:scale-90 transition-all hover:bg-slate-600">
+                    <i class="fas fa-hand-pointer text-white text-lg"></i>
+                </button>
+            </div>
+            <div class="flex items-center justify-end gap-3 group">
+                <span id="soundLabel" class="menu-item-label text-[9px] font-black uppercase text-slate-100 bg-black/80 px-2 py-1.5 rounded-lg border border-white/10 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity">Loa: Bật</span>
+                <button id="soundToggleBtn" class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center shadow-xl border border-white/5 active:scale-90 transition-all hover:bg-indigo-500">
+                    <i class="fas fa-volume-up text-white text-lg"></i>
+                </button>
+            </div>
+            <div class="flex items-center justify-end gap-3 group">
+                <span class="menu-item-label text-[9px] font-black uppercase text-slate-100 bg-black/80 px-2 py-1.5 rounded-lg border border-white/10 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity">Cài đặt</span>
+                <button onclick="toggleModal('#settingsModal')" class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center shadow-xl border border-white/5 active:scale-90 transition-all hover:bg-slate-700">
+                    <i class="fas fa-cog text-white text-lg"></i>
+                </button>
+            </div>
+            <div class="flex items-center justify-end gap-3 group">
+                <span class="menu-item-label text-[9px] font-black uppercase text-slate-100 bg-black/80 px-2 py-1.5 rounded-lg border border-white/10 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity">Chơi lại</span>
+                <button onclick="resetGame()" class="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center shadow-xl border border-white/5 active:scale-90 transition-all hover:bg-red-500">
+                    <i class="fas fa-sync-alt text-white text-lg"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Menu chính: Sử dụng gap-5 từ parent div để giữ khoảng cách đều -->
+        <button id="menuMainBtn" class="w-14 h-14 rounded-full bg-yellow-400 flex items-center justify-center shadow-2xl border-2 border-yellow-300 transition-all duration-300 shadow-yellow-400/30 active:scale-90">
+            <i class="fas fa-bars text-slate-900 text-xl"></i>
         </button>
-        <button class="btn btn-reset" onclick="resetGame()">
-            <span>
-                <svg class="btn-icon" viewBox="0 0 24 24">
-                    <path d="M12 4C14.7486 4 17.1325 5.38626 18.6049 7.5H16V9.5H22V3.5H20V5.99936C18.1716 3.55446 15.2715 2 12 2C6.47715 2 2 6.47715 2 12H4C4 7.58172 7.58172 4 12 4ZM12 20C9.25136 20 6.86752 18.6137 5.39513 16.5H8V14.5H2V20.5H4V18.0006C5.82839 20.4455 8.72854 22 12 22C17.5228 22 22 17.5228 22 12H20C20 16.4183 16.4183 20 12 20Z"/>
-                </svg>
-                Reset
-            </span>
-        </button>
-        <img id="configure-max" src="https://img.icons8.com/ios-filled/50/000000/settings.png" alt="Configure Max" onclick="showConfigPopup()">
     </div>
-</div>
-<div class="modal-overlay" id="resetModal">
-    <div class="modal">
-        <div class="modal-title">Xác nhận</div>
-        <div class="modal-content">Bạn có chắc chắn muốn chơi lại từ đầu không?</div>
-        <div class="modal-buttons">
-            <button class="modal-btn modal-btn-cancel" onclick="closeResetModal()">Hủy bỏ</button>
-            <button class="modal-btn modal-btn-confirm" onclick="confirmReset()">Đồng ý</button>
+
+    <!-- Modals -->
+    <div id="settingsModal" class="modal-overlay hidden fixed inset-0 z-[150] flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-[2.5rem] w-full max-md shadow-2xl overflow-hidden scale-in">
+            <div class="p-7 flex justify-between items-center border-b border-slate-800 bg-slate-800/20">
+                <h2 class="text-xl font-black text-yellow-400 uppercase italic tracking-wider">Cấu Hình</h2>
+                <button onclick="toggleModal('#settingsModal')" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-all"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-7 space-y-7">
+                <div class="space-y-2.5">
+                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Số tối đa (N)</label>
+                    <input id="maxNumInput" type="number" min="1" max="999" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 focus:border-yellow-400 outline-none text-yellow-400 font-black text-2xl shadow-inner">
+                </div>
+                <div class="space-y-2.5">
+                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block">API Webhook</label>
+                    <input id="apiInput" type="url" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 focus:border-yellow-400 outline-none text-indigo-400 text-xs shadow-inner">
+                </div>
+            </div>
+            <div class="p-7 pt-0">
+                <button onclick="saveConfig()" class="w-full py-5 bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 font-black text-sm rounded-2xl uppercase tracking-[0.2em] shadow-xl hover:shadow-yellow-500/20 active:translate-y-1 transition-all">Lưu cài đặt</button>
+            </div>
         </div>
     </div>
-</div>
-<div class="modal-overlay" id="configModal">
-    <div class="modal">
-        <div class="modal-title">Cấu hình</div>
-        <div class="modal-content">
-            <label for="countInput">Số lượng:</label>
-            <input type="number" id="countInput" value="60">
-        </div>
-        <div class="modal-buttons">
-            <button class="modal-btn modal-btn-cancel" onclick="closeConfigModal()">Hủy bỏ</button>
-            <button class="modal-btn modal-btn-confirm" onclick="setCount()">Lưu</button>
-        </div>
-    </div>
-</div>
+
     <script>
-let COUNT = 60;
-const ANIMATION_DURATION = 2000;
-const ANIMATION_INTERVAL = 100;
+        // --- Globals ---
+        let config = {
+            maxNumber: 90,
+            apiEndpoint: '',
+            isSoundEnabled: true,
+            autoSpeed: 3000
+        };
 
-let selected = new Set();
-let isSpinning = false;
-let spinInterval;
+        let state = {
+            calledNumbers: [],
+            currentNumber: null,
+            isRolling: false,
+            isAutoPlaying: false,
+            isAutoModeEnabled: false
+        };
 
-function getRandomNumber(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+        let autoTimeout = null;
+        const AUDIO_BASE_URL = "https://raw.githubusercontent.com/vlhquang/loto/main/audio/";
 
-// ✅ CHỈ GIỮ 1 HÀM NÀY
-function getUniqueRandomNumber() {
-  if (selected.size >= COUNT) return null;
+        // --- Core Functions ---
+        function adjustSpeed(delta) {
+            config.autoSpeed = Math.max(500, Math.min(10000, config.autoSpeed + delta));
+            updateDelayDisplay();
+            localStorage.setItem('loto_config_final', JSON.stringify(config));
+        }
 
-  // Cách 1: random thử tới khi ra số chưa dùng (OK với COUNT <= vài nghìn)
-  let num;
-  do {
-    num = getRandomNumber(1, COUNT);
-  } while (selected.has(num));
-  return num;
-}
+        function updateDelayDisplay() {
+            $('#delayDisplay').text((config.autoSpeed / 1000).toFixed(1) + 's');
+        }
 
-// ✅ ADD SỐ VÀO SET để lần sau không trùng
-function markNumberAsSelected(number) {
-  if (number == null) return;
-  selected.add(number);
-}
+        function init() {
+            const savedConfig = localStorage.getItem('loto_config_final');
+            if (savedConfig) config = JSON.parse(savedConfig);
 
-function updateDisplay(number) {
-  document.getElementById("currentNumber").textContent = number ?? "";
-}
+            const savedState = localStorage.getItem('loto_state_final');
+            if (savedState) {
+                state = JSON.parse(savedState);
+                state.isRolling = false;
+                state.isAutoPlaying = false;
+            }
 
-function spin() {
-  if (isSpinning) return;
+            $('#maxNumInput').val(config.maxNumber);
+            $('#apiInput').val(config.apiEndpoint);
+            
+            updateDelayDisplay();
+            updateSoundUI();
+            renderGrid();
+            renderRecentSlots();
+            
+            if (state.currentNumber) {
+                $('#mainNumber').text(state.currentNumber.toString().padStart(2, '0'));
+            }
+        }
 
-  if (selected.size >= COUNT) {
-    alert("Tất cả các số đã được chọn!");
-    return;
-  }
+        function saveConfig() {
+            const newMax = parseInt($('#maxNumInput').val()) || 90;
+            config.maxNumber = newMax;
+            config.apiEndpoint = $('#apiInput').val();
+            localStorage.setItem('loto_config_final', JSON.stringify(config));
+            toggleModal('#settingsModal');
+            renderGrid();
+        }
 
-  const drawButton = document.getElementById("drawButton");
-  drawButton.classList.add("is-spinning");
-  isSpinning = true;
+        function persistState() {
+            localStorage.setItem('loto_state_final', JSON.stringify(state));
+        }
 
-  const numberDisplay = document.getElementById("numberDisplay");
-  numberDisplay.classList.add("spinning");
+        function renderGrid() {
+            const $container = $('#gridContainer').empty();
+            for (let i = 1; i <= config.maxNumber; i++) {
+                const isCalled = state.calledNumbers.includes(i);
+                const isLatest = state.currentNumber === i;
+                const ball = $(`
+                    <div data-num="${i}" class="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-[10px] md:text-xs font-bold transition-all duration-500
+                        ${isCalled ? (isLatest ? 'bg-yellow-400 text-slate-900 loto-ball-active z-10 scale-110 border-2 border-yellow-200' : 'bg-blue-600 text-white shadow-lg shadow-blue-900/40') : 'bg-slate-800 text-slate-600 border border-slate-700 opacity-40'}">
+                        ${i.toString().padStart(2, '0')}
+                    </div>
+                `);
+                $container.append(ball);
+            }
+        }
 
-  let elapsed = 0;
+        function renderRecentSlots() {
+            const history = [...state.calledNumbers].reverse();
+            $('.recent-slot').each(function(i) {
+                const num = history[i];
+                const $slot = $(this);
+                if (num !== undefined && num !== null) {
+                    $slot.text(num.toString().padStart(2, '0'))
+                         .removeClass('bg-black/20 text-slate-800 border-dashed opacity-40')
+                         .addClass('bg-slate-800/60 text-slate-300 border-solid opacity-80');
+                    if (i === 0) {
+                        $slot.addClass('bg-yellow-400 text-slate-900 border-yellow-400 shadow-lg shadow-yellow-400/20 scale-105 z-10').removeClass('bg-slate-800/60 text-slate-300');
+                    } else {
+                        $slot.removeClass('bg-yellow-400 text-slate-900 border-yellow-400 shadow-lg shadow-yellow-400/20 scale-105 z-10');
+                    }
+                } else {
+                    $slot.text('--').addClass('bg-black/20 text-slate-800 border-dashed opacity-40').removeClass('bg-yellow-400 bg-slate-800/60 text-slate-900 text-slate-300 border-solid scale-105 z-10 shadow-lg shadow-yellow-400/20');
+                }
+            });
+        }
 
-  if (navigator.vibrate) navigator.vibrate(200);
+        function callNumber() {
+            if (state.isRolling) return;
+            
+            const available = [];
+            for (let i = 1; i <= config.maxNumber; i++) {
+                if (!state.calledNumbers.includes(i)) available.push(i);
+            }
 
-  spinInterval = setInterval(() => {
-    // hiển thị random cho đẹp (có thể trùng, không sao)
-    updateDisplay(getRandomNumber(1, COUNT));
-    elapsed += ANIMATION_INTERVAL;
+            if (available.length === 0) {
+                alert("Đã gọi hết tất cả các số!");
+                state.isAutoPlaying = false;
+                updateAutoBadge();
+                return;
+            }
 
-    if (elapsed >= ANIMATION_DURATION) {
-      clearInterval(spinInterval);
-      isSpinning = false;
-      numberDisplay.classList.remove("spinning");
-      drawButton.classList.remove("is-spinning");
+            state.isRolling = true;
+            $('#ballRing').addClass('border-yellow-400 shadow-[0_0_30px_rgba(250,204,21,0.2)]');
+            $('#mainNumber').addClass('animate-pulse');
 
-      const finalNumber = getUniqueRandomNumber();   // ✅ lấy số chưa dùng
-      updateDisplay(finalNumber);
-      markNumberAsSelected(finalNumber);            // ✅ lưu lại để không trùng
-      logSelection(finalNumber);
+            let cycles = 0;
+            let currentDelay = 40;
+            const maxCycles = 25;
 
-      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-    }
-  }, ANIMATION_INTERVAL);
-}
+            const roll = () => {
+                cycles++;
+                const randomDisplay = Math.floor(Math.random() * config.maxNumber) + 1;
+                $('#mainNumber').text(randomDisplay.toString().padStart(2, '0'));
 
-function resetGame() {
-  document.getElementById('resetModal').style.display = 'block';
-}
+                if (cycles < maxCycles) {
+                    if (cycles > maxCycles * 0.6) currentDelay *= 1.25;
+                    setTimeout(roll, currentDelay);
+                } else {
+                    const finalNum = available[Math.floor(Math.random() * available.length)];
+                    finalizeNumber(finalNum);
+                }
+            };
+            roll();
+        }
 
-function closeResetModal() {
-  document.getElementById('resetModal').style.display = 'none';
-}
+        function finalizeNumber(num) {
+            state.isRolling = false;
+            state.currentNumber = num;
+            state.calledNumbers.push(num);
+            
+            $('#mainNumber').text(num.toString().padStart(2, '0')).removeClass('animate-pulse');
+            $('#ballRing').removeClass('border-yellow-400 shadow-[0_0_30px_rgba(250,204,21,0.2)]');
+            
+            renderGrid();
+            renderRecentSlots();
+            playAudio(num);
+            sendWebhook(num);
+            persistState();
 
-function confirmReset() {
-  selected.clear();
-  document.getElementById('log').innerHTML = '';
-  updateDisplay(0);
+            if (state.isAutoModeEnabled && state.isAutoPlaying) {
+                autoTimeout = setTimeout(callNumber, config.autoSpeed);
+            }
+        }
 
-  if (isSpinning) {
-    clearInterval(spinInterval);
-    isSpinning = false;
-    document.getElementById("numberDisplay").classList.remove("spinning");
-    document.getElementById("drawButton").classList.remove("is-spinning");
-  }
+        function sendWebhook(num) {
+            if (!config.apiEndpoint) return;
+            const payload = {
+                number: num,
+                calledAt: Date.now(),
+                history: state.calledNumbers
+            };
+            fetch(config.apiEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).catch(err => console.warn('API Error:', err));
+        }
 
-  closeResetModal();
-}
+        function playAudio(num) {
+            if (!config.isSoundEnabled) return;
+            const audioUrl = `${AUDIO_BASE_URL}number_${num}.mp3`;
+            const audio = new Audio(audioUrl);
+            audio.play().catch(e => {
+                console.warn(`Không thể phát âm thanh: ${audioUrl}`);
+            });
+        }
 
-function showConfigPopup() {
-  document.getElementById('configModal').style.display = 'block';
-}
+        function toggleAutoMode() {
+            state.isAutoModeEnabled = !state.isAutoModeEnabled;
+            state.isAutoPlaying = false;
+            clearTimeout(autoTimeout);
+            
+            if (state.isAutoModeEnabled) {
+                $('#autoToggleBtn').removeClass('bg-slate-700').addClass('bg-yellow-400').find('i').removeClass('fa-hand-pointer').addClass('fa-sync animate-spin-slow text-slate-900');
+                $('#autoLabel').text('Tự động: Bật');
+                $('#autoBadge').removeClass('hidden');
+                updateAutoBadge();
+            } else {
+                $('#autoToggleBtn').addClass('bg-slate-700').removeClass('bg-yellow-400').find('i').addClass('fa-hand-pointer').removeClass('fa-sync animate-spin-slow text-slate-900');
+                $('#autoLabel').text('Tự động: Tắt');
+                $('#autoBadge').addClass('hidden');
+            }
+        }
 
-function closeConfigModal() {
-  document.getElementById('configModal').style.display = 'none';
-}
+        function startStopAuto() {
+            if (!state.isAutoModeEnabled) return;
+            state.isAutoPlaying = !state.isAutoPlaying;
+            updateAutoBadge();
+            
+            if (state.isAutoPlaying) {
+                callNumber();
+            } else {
+                clearTimeout(autoTimeout);
+            }
+        }
 
-function setCount() {
-  const countInput = document.getElementById('countInput').value;
-  if (countInput !== '') {
-    COUNT = parseInt(countInput, 10);
-    confirmReset();       // ✅ reset thật luôn (đỡ phải bấm confirm)
-    closeConfigModal();
-  }
-}
+        function updateAutoBadge() {
+            const $span = $('#autoStatusText');
+            const $icon = $('#autoBadge i');
+            if (state.isAutoPlaying) {
+                $span.text('Running');
+                $icon.removeClass('fa-pause text-red-400').addClass('fa-play text-green-400');
+            } else {
+                $span.text('Paused');
+                $icon.removeClass('fa-play text-green-400').addClass('fa-pause text-red-400');
+            }
+        }
 
-function logSelection(number) {
-  if (number == null) return;
-  const logDiv = document.getElementById('log');
-  const newLogEntry = document.createElement('div');
-  newLogEntry.className = 'grid-item item-active';
-  newLogEntry.innerText = number;
-  logDiv.appendChild(newLogEntry);
-}
+        function toggleSound() {
+            config.isSoundEnabled = !config.isSoundEnabled;
+            updateSoundUI();
+            localStorage.setItem('loto_config_final', JSON.stringify(config));
+        }
 
-window.onclick = function(event) {
-  const resetModal = document.getElementById('resetModal');
-  const configModal = document.getElementById('configModal');
-  if (event.target === resetModal) closeResetModal();
-  if (event.target === configModal) closeConfigModal();
-}
+        function updateSoundUI() {
+            if (config.isSoundEnabled) {
+                $('#soundToggleBtn').addClass('bg-indigo-600').removeClass('bg-slate-700').find('i').removeClass('fa-volume-mute').addClass('fa-volume-up');
+                $('#soundLabel').text('Loa: Bật');
+            } else {
+                $('#soundToggleBtn').removeClass('bg-indigo-600').addClass('bg-slate-700').find('i').addClass('fa-volume-mute').removeClass('fa-volume-up');
+                $('#soundLabel').text('Loa: Tắt');
+            }
+        }
 
-document.addEventListener('keydown', function(event) {
-  if (event.key === 'Escape') {
-    closeResetModal();
-    closeConfigModal();
-  }
-});
+        function resetGame() {
+            if (confirm("Xóa lịch sử và bắt đầu phiên chơi mới?")) {
+                state.calledNumbers = [];
+                state.currentNumber = null;
+                state.isAutoPlaying = false;
+                clearTimeout(autoTimeout);
+                $('#mainNumber').text('--');
+                persistState();
+                renderGrid();
+                renderRecentSlots();
+                updateAutoBadge();
+            }
+        }
 
-document.getElementById("drawButton").addEventListener("click", spin);
-</script>
+        function toggleModal(selector) {
+            const $modal = $(selector);
+            if ($modal.is(':visible')) {
+                $modal.fadeOut(200, function() {
+                    $(this).addClass('hidden');
+                });
+            } else {
+                $modal.removeClass('hidden').hide().fadeIn(200);
+            }
+        }
 
+        // --- Ready ---
+        $(document).ready(() => {
+            init();
+
+            // Gắn sự kiện cho nút tăng/giảm delay
+            $('#btnIncreaseDelay').on('click', function(e) {
+                e.stopPropagation();
+                adjustSpeed(100);
+            });
+
+            $('#btnDecreaseDelay').on('click', function(e) {
+                e.stopPropagation();
+                adjustSpeed(-100);
+            });
+
+            $('#menuMainBtn').on('click', function() {
+                const $options = $('#menuOptions');
+                if ($options.is(':hidden')) {
+                    $options.slideDown(300).removeClass('hidden').addClass('flex');
+                } else {
+                    $options.slideUp(300, function() { $(this).addClass('hidden').removeClass('flex'); });
+                }
+                $(this).toggleClass('bg-slate-800 rotate-90 border-slate-700 shadow-none');
+                $(this).find('i').toggleClass('fa-bars fa-times');
+            });
+
+            $('#mainButton').on('click', () => {
+                if (state.isAutoModeEnabled) startStopAuto();
+                else callNumber();
+            });
+
+            $('#autoToggleBtn').on('click', toggleAutoMode);
+            $('#soundToggleBtn').on('click', toggleSound);
+
+            $('.modal-overlay').on('click', function(e) {
+                if (e.target === this) toggleModal('#' + $(this).attr('id'));
+            });
+
+            $(document).on('keydown', (e) => {
+                if (e.key === "Escape") {
+                    $('.modal-overlay:visible').each(function() {
+                        toggleModal('#' + $(this).attr('id'));
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>
